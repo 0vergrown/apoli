@@ -17,6 +17,8 @@ public final class BlockActions {
         ActionTypes.BLOCK.register(Apoli.id("modify_block_state"), new ModifyBlockStateAction());
         ActionTypes.BLOCK.register(Apoli.id("set_block"), new SetBlockAction());
         ActionTypes.BLOCK.register(Apoli.id("spawn_entity"), new SpawnEntityBlockAction());
+        ActionTypes.BLOCK.register(Apoli.id("spawn_particles"), new SpawnParticlesBlockAction());
+        ActionTypes.BLOCK.register(Apoli.id("tick_rate"), new TickRateBlockAction());
         ActionTypes.BLOCK.register(Apoli.id("offset"), new OffsetBlockMetaAction());
         ActionTypes.BLOCK.register(Apoli.id("area_of_effect"), new AreaOfEffectBlockMetaAction());
 

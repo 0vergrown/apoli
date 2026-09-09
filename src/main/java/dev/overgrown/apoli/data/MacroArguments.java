@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.overgrown.apoli.codec.IdCodecs;
+import dev.overgrown.apoli.power.ApoliPowers;
 import dev.overgrown.apoli.power.PowerContainer;
 import dev.overgrown.apoli.power.PowerResources;
 import net.minecraft.nbt.ByteTag;
@@ -87,19 +88,45 @@ public record MacroArguments(Optional<ResourceLocation> storage, String path, Op
     private static void readResources(CompoundTag out, Map<String, ResourceLocation> wanted, @Nullable Entity holder) {
         if (wanted.isEmpty()) return;
         PowerContainer container = holder == null ? null : PowerContainer.of(holder);
-        if (container == null) return;
         for (Map.Entry<String, ResourceLocation> entry : wanted.entrySet()) {
             ResourceLocation powerId = entry.getValue();
-            OptionalInt value = PowerResources.read(container, powerId);
-            if (value.isEmpty()) continue;
             String key = entry.getKey();
+            OptionalInt value = container == null ? OptionalInt.empty() : PowerResources.read(container, powerId);
+            if (value.isEmpty()) {
+                reportUnreadable(holder, container, key, powerId);
+                continue;
+            }
             out.putInt(key, value.getAsInt());
             PowerResources.bound(container, powerId, true).ifPresent(max -> out.putInt(key + "_max", max));
             PowerResources.bound(container, powerId, false).ifPresent(min -> out.putInt(key + "_min", min));
         }
     }
 
-    public static String expand(String command, CompoundTag arguments) {
+    private static void reportUnreadable(@Nullable Entity holder, @Nullable PowerContainer container,
+                                         String key, ResourceLocation powerId) {
+        String reason;
+        if (container == null) {
+            reason = "this action has no entity to read powers from";
+        } else if (!container.hasPower(powerId)) {
+            reason = ApoliPowers.get(powerId) == null
+                ? "no power with that id is loaded"
+                : "the holder does not have that power";
+        } else if (!PowerResources.isResource(powerId)) {
+            reason = "that power is loaded, but it is not a resource";
+        } else {
+            reason = "that resource holds no value yet";
+        }
+        String line = "$(" + key + ") is undefined: " + powerId + " could not be read — " + reason + ".";
+        dev.overgrown.apoli.dev.DevMode.report(holder, line);
+        if (!WARNED.add(key + '\0' + powerId)) return;
+        LOG.warn("[Apoli] {}", line);
+    }
+
+    public static void resetWarnings() {
+        WARNED.clear();
+    }
+
+    public static String expand(String command, CompoundTag arguments, @Nullable Entity actor) {
         int open = command.indexOf("$(");
         if (open < 0) return command;
         StringBuilder out = new StringBuilder(command.length());
@@ -110,7 +137,7 @@ public record MacroArguments(Optional<ResourceLocation> storage, String path, Op
             String key = command.substring(open + 2, close);
             Tag value = arguments.get(key);
             if (value == null) {
-                warnMissing(command, key);
+                warnMissing(command, key, actor);
                 return null;
             }
             out.append(command, cursor, open).append(render(value));
@@ -120,7 +147,9 @@ public record MacroArguments(Optional<ResourceLocation> storage, String path, Op
         return out.append(command, cursor, command.length()).toString();
     }
 
-    private static void warnMissing(String command, String key) {
+    private static void warnMissing(String command, String key, @Nullable Entity actor) {
+        dev.overgrown.apoli.dev.DevMode.report(actor,
+            "skipped \"" + command + "\" — nothing supplied a value for $(" + key + ").");
         if (!WARNED.add(key + '\0' + command)) return;
         LOG.warn("[Apoli] apoli:execute_command skipped \"{}\" — nothing supplied a value for $({}). "
             + "Check the 'arguments' object: a resource the holder does not have, or a storage path that is empty, "

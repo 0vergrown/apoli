@@ -25,6 +25,7 @@ public final class BiEntityActions {
         ActionTypes.BI_ENTITY.register(Apoli.id("tame"), new TameAction());
         ActionTypes.BI_ENTITY.register(Apoli.id("actor_action"), new ActorAction());
         ActionTypes.BI_ENTITY.register(Apoli.id("target_action"), new TargetAction());
+        ActionTypes.BI_ENTITY.register(Apoli.id("both"), new BothAction());
         ActionTypes.BI_ENTITY.register(Apoli.id("invert"), new InvertBiEntityAction());
         ActionTypes.BI_ENTITY.register(
             Apoli.id("add_to_entity_set"),

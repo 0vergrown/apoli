@@ -71,6 +71,7 @@ public final class ApoliReloadListener extends SimpleJsonResourceReloadListener 
             }
         }
         ApoliPowers.replaceAll(loaded);
+        dev.overgrown.apoli.data.MacroArguments.resetWarnings();
         LOG.info("[Apoli] Loaded {} power(s).", loaded.size());
 
         Map<ResourceLocation, dev.overgrown.apoli.skill.Skill> powerSkills = new HashMap<>();

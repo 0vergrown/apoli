@@ -63,9 +63,9 @@ public class CustomParticle extends SingleQuadParticle {
             : options.endSizeOr() + variation;
         this.quadSize = this.startSize;
         this.setSize(this.startSize, this.startSize);
-        this.roll = options.roll() * Mth.DEG_TO_RAD;
+        this.roll = (float) options.roll().eval((net.minecraft.world.entity.Entity) null) * Mth.DEG_TO_RAD;
         this.oRoll = this.roll;
-        this.rollStep = options.rollSpeed() * Mth.DEG_TO_RAD;
+        this.rollStep = (float) options.rollSpeed().eval((net.minecraft.world.entity.Entity) null) * Mth.DEG_TO_RAD;
         this.cell = this.sheet.cellAt(0, this.lifetime, this.loopFrames);
 
         int from = options.color();

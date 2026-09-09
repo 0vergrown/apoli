@@ -15,6 +15,8 @@
     "command.EntitySelectorOptionsAccessor",
     "command.EntitySelectorOptionsMixin",
     "damage.EntityInvulnerableMixin",
+    "damage.ExplosionEntityDamageMixin",
+    "damage.LivingEntityAttackStrengthAccessor",
     "damage.LivingEntityDamageMixin",
     "damage.LivingEntityLastHurtAccessor",
     "damage.PlayerAttackStrengthMixin",
@@ -98,7 +100,10 @@
     "swing.LivingEntityDualSwingMixin",
     "typetag.EntityTypeLinkMixin",
     "typetag.EntityTypeTagMixin",
-    "typetag.LivingEntityMobTypeMixin"
+    "typetag.LivingEntityMobTypeMixin",
+    "tick.ServerLevelTickRateMixin",
+    "tick.ServerPlayerFloatingMixin",
+    "tick.ServerPlayerTickRateMixin"
   ],
   "client": [
     "block.RenderChunkRegionBlockRenderMixin",
@@ -107,6 +112,7 @@
     "disguise.ClientPacketListenerDisguiseEventMixin",
     "disguise.EntityRenderDispatcherDisguiseMixin",
     "disguise.EntityRendererDisguiseNameMixin",
+    "disguise.LivingEntityRendererAddLayerAccessor",
     "disguise.LivingEntitySwingDisguiseMixin",
     "disguise.PlayerRendererDisguiseSkinMixin",
     "disguise.WalkAnimationStateAccessor",
@@ -130,8 +136,14 @@
     "flag.PlayerRendererModelColorMixin",
     "flag.ScreenEffectFluidVisionMixin",
     "flag.ScreenEffectPhasingMixin",
+    "hud.GuiGraphicsStatusRowMixin",
+    "hud.GuiStatusHelperAccessor",
+    "hud.GuiStatusStackMixin",
+    "hud.ScreenStatusStackMixin",
     "input.EntityTurnCursorSpeedMixin",
+    "input.LocalPlayerUseSlowdownMixin",
     "input.MouseHandlerScrollMixin",
+    "keybinding.ClientLanguageKeybindNameMixin",
     "keybinding.KeyMappingCategoryAccessor",
     "keybinding.KeyMappingClickCountAccessor",
     "keybinding.KeyMappingForcePressMixin",
@@ -151,7 +163,14 @@
     "sound.AbstractSoundInstanceMixin",
     "sound.SoundEngineReceptionMixin",
     "swing.HumanoidModelDualSwingMixin",
-    "swing.ItemInHandRendererDualSwingMixin"
+    "swing.ItemInHandRendererDualSwingMixin",
+    "tick.ClientLevelTickRateMixin",
+    "tick.EntityLerpFollowMixin",
+    "tick.LivingEntityTickRateMixin",
+    "tick.LocalPlayerTickRateMixin",
+    "tick.LevelRendererTickRateMixin",
+    "tick.CameraTickRateMixin",
+    "tick.GameRendererTickRateMixin"
   ],
   "injectors": {
     "defaultRequire": 1
