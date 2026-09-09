@@ -46,7 +46,8 @@ public final class PowerSyncCache {
         }
         Map<ResourceLocation, String> raw = new HashMap<>();
         for (Map.Entry<ResourceLocation, Power> e : ApoliPowers.view().entrySet()) {
-            var encoded = Power.CODEC.encodeStart(JsonOps.INSTANCE, e.getValue());
+            var encoded = Power.CODEC.encodeStart(
+                dev.overgrown.apoli.codec.ApoliOps.of(JsonOps.INSTANCE), e.getValue());
             var json = encoded.result();
             if (json.isEmpty()) {
                 Apoli.LOGGER.error("[Apoli] Power {} could not be re-encoded for client sync and will be missing "

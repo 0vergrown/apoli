@@ -135,6 +135,7 @@ public final class EntityActions {
         ActionTypes.ENTITY.register(Apoli.id("remove_disguise"), new RemoveDisguiseAction());
         ActionTypes.ENTITY.register(Apoli.id("block_action_at"), new BlockActionAtAction());
         ActionTypes.ENTITY.register(Apoli.id("area_of_effect"), new AreaOfEffectAction());
+        ActionTypes.ENTITY.register(Apoli.id("tick_rate"), new TickRateAction());
         ActionTypes.ENTITY.register(Apoli.id("selector_action"), new SelectorAction());
         ActionTypes.ENTITY.register(Apoli.id("random_teleport"), new RandomTeleportAction());
         ActionTypes.ENTITY.register(Apoli.id("raycast"), new RaycastAction());

@@ -41,7 +41,7 @@ public final class ExecuteCommandBiEntityAction implements ActionType<BiEntityCt
             command = command.replace(cfg.targetSelector(), target.getStringUUID());
         }
         if (cfg.arguments().isPresent()) {
-            command = MacroArguments.expand(command, cfg.arguments().get().resolve(server, actor, target));
+            command = MacroArguments.expand(command, cfg.arguments().get().resolve(server, actor, target), actor);
             if (command == null) return;
         }
         dev.overgrown.apoli.dev.DevMode.echoCommand(actor, command);

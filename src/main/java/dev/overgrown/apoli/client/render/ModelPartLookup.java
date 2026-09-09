@@ -1,5 +1,6 @@
 package dev.overgrown.apoli.client.render;
 
+import dev.overgrown.apoli.client.render.model.ExtraModelParts;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -55,12 +56,19 @@ public final class ModelPartLookup {
             case "leftpants" -> {
                 if (player != null) parts.add(player.leftPants);
             }
-            default -> {}
+            default -> {
+                if (model instanceof ExtraModelParts extra) extra.collectExtraParts(normalized, parts);
+            }
         }
     }
 
     public static List<ModelPart> allParts(HumanoidModel<?> model) {
         List<ModelPart> parts = new ArrayList<>(12);
+        allPartsInto(model, parts);
+        return parts;
+    }
+
+    public static void allPartsInto(HumanoidModel<?> model, List<ModelPart> parts) {
         parts.add(model.head);
         parts.add(model.hat);
         parts.add(model.body);
@@ -75,7 +83,9 @@ public final class ModelPartLookup {
             parts.add(player.rightPants);
             parts.add(player.leftPants);
         }
-        return parts;
+        if (model instanceof ExtraModelParts extra) {
+            extra.collectExtraParts(parts);
+        }
     }
 
     public static Map<ModelPart, float[]> buildColorMap(HumanoidModel<?> model, Map<String, float[]> partColors) {

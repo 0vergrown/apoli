@@ -15,6 +15,7 @@
     "command.EntitySelectorOptionsAccessor",
     "command.EntitySelectorOptionsMixin",
     "damage.EntityInvulnerableMixin",
+    "damage.LivingEntityAttackStrengthAccessor",
     "damage.LivingEntityLastHurtAccessor",
     "damage.PlayerAttackStrengthMixin",
     "damage.PlayerCriticalHitMixin",
@@ -91,7 +92,10 @@
     "teleport.EntityTeleportMixin",
     "teleport.ServerPlayerTeleportMixin",
     "typetag.EntityTypeLinkMixin",
-    "typetag.EntityTypeTagMixin"
+    "typetag.EntityTypeTagMixin",
+    "tick.ServerLevelTickRateMixin",
+    "tick.ServerPlayerFloatingMixin",
+    "tick.ServerPlayerTickRateMixin"
   ],
   "client": [
     "block.RenderChunkRegionBlockRenderMixin",
@@ -100,6 +104,7 @@
     "disguise.ClientPacketListenerDisguiseEventMixin",
     "disguise.EntityRenderDispatcherDisguiseMixin",
     "disguise.EntityRendererDisguiseNameMixin",
+    "disguise.LivingEntityRendererAddLayerAccessor",
     "disguise.LivingEntitySwingDisguiseMixin",
     "disguise.PlayerRendererDisguiseSkinMixin",
     "disguise.WalkAnimationStateAccessor",
@@ -123,7 +128,9 @@
     "flag.PlayerRendererModelColorMixin",
     "flag.ScreenEffectFluidVisionMixin",
     "input.EntityTurnCursorSpeedMixin",
+    "input.LocalPlayerUseSlowdownMixin",
     "input.MouseHandlerScrollMixin",
+    "keybinding.ClientLanguageKeybindNameMixin",
     "keybinding.KeyMappingCategoryAccessor",
     "keybinding.KeyMappingClickCountAccessor",
     "keybinding.KeyMappingForcePressMixin",
@@ -140,7 +147,14 @@
     "sound.AbstractSoundInstanceMixin",
     "sound.SoundEngineReceptionMixin",
     "swing.HumanoidModelDualSwingMixin",
-    "swing.ItemInHandRendererDualSwingMixin"
+    "swing.ItemInHandRendererDualSwingMixin",
+    "tick.ClientLevelTickRateMixin",
+    "tick.EntityLerpFollowMixin",
+    "tick.LivingEntityTickRateMixin",
+    "tick.LocalPlayerTickRateMixin",
+    "tick.LevelRendererTickRateMixin",
+    "tick.CameraTickRateMixin",
+    "tick.GameRendererTickRateMixin"
   ],
   "injectors": {
     "defaultRequire": 1

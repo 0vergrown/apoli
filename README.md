@@ -7,7 +7,7 @@
 ## Branches
 
 This repository holds one branch per Minecraft version / mod loader combination, all kept at feature parity and sharing the same data pack format:
-
+[moddev](build/moddev)
 | Branch                                                                       | Loader   | Minecraft |
 |------------------------------------------------------------------------------|----------|-----------|
 | [`Fabric-1.20.1`](https://github.com/0vergrown/Apoli/tree/Fabric-1.20.1)     | Fabric   | 1.20.1    |

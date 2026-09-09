@@ -15,16 +15,41 @@ public final class DevParticles {
         new DustParticleOptions(new Vector3f(0.25F, 0.55F, 1.0F), 0.75F);
     private static final DustParticleOptions RED =
         new DustParticleOptions(new Vector3f(1.0F, 0.2F, 0.2F), 0.75F);
+    private static final DustParticleOptions GREEN =
+        new DustParticleOptions(new Vector3f(0.35F, 0.95F, 0.4F), 0.75F);
 
     private static final int RING_STEPS = 48;
     private static final int MAX_POINTS = 600;
+    private static final int TICK_BUDGET = 4000;
+    private static final int REFRESH_PERIOD = 10;
+
+    private static long budgetTick = Long.MIN_VALUE;
+    private static int tickBudget;
 
     private DevParticles() {}
 
+    public static boolean due(net.minecraft.world.level.Level level) {
+        return DevMode.any() && level.getGameTime() % REFRESH_PERIOD == 0;
+    }
+
     public static void outlineShape(ServerLevel level, Vec3 origin, Shape shape, double rx, double ry, double rz) {
+        emitShape(level, origin, shape, rx, ry, rz, BLUE);
+    }
+
+    public static void outlineCondition(ServerLevel level, Vec3 origin, Shape shape, double rx, double ry, double rz) {
+        emitShape(level, origin, shape, rx, ry, rz, GREEN);
+    }
+
+    public static void outlineBox(ServerLevel level, net.minecraft.world.phys.AABB box) {
+        emitShape(level, box.getCenter(), Shape.CUBE,
+            box.getXsize() * 0.5, box.getYsize() * 0.5, box.getZsize() * 0.5, BLUE);
+    }
+
+    private static void emitShape(ServerLevel level, Vec3 origin, Shape shape,
+                                  double rx, double ry, double rz, DustParticleOptions color) {
         List<ServerPlayer> watchers = DevMode.watchers(level);
         if (watchers.isEmpty()) return;
-        Emitter out = new Emitter(level, watchers, BLUE);
+        Emitter out = new Emitter(level, watchers, color);
         switch (shape) {
             case CUBE -> box(out, origin, rx, ry, rz);
             case SPHERE -> ellipsoid(out, origin, rx, ry, rz);
@@ -138,9 +163,19 @@ public final class DevParticles {
 
         void at(Vec3 pos) {
             if (budget-- <= 0) return;
+            if (!spend(this.level)) return;
             for (int i = 0; i < watchers.size(); i++) {
                 level.sendParticles(watchers.get(i), options, true, pos.x, pos.y, pos.z, 1, 0.0, 0.0, 0.0, 0.0);
             }
         }
+    }
+
+    private static boolean spend(ServerLevel level) {
+        long now = level.getGameTime();
+        if (now != budgetTick) {
+            budgetTick = now;
+            tickBudget = TICK_BUDGET;
+        }
+        return tickBudget-- > 0;
     }
 }

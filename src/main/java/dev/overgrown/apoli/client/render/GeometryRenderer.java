@@ -38,6 +38,18 @@ public final class GeometryRenderer {
         syncBone(custom, ModelParts.LEFT_LEG, live.leftLeg, rest.leftLeg);
     }
 
+    public static void syncHumanoid(CustomModel custom, net.minecraft.client.model.HumanoidModel<?> live) {
+        PlayerModel<AbstractClientPlayer> rest = PlayerRestPose.get();
+        resetAll(custom);
+        syncBone(custom, ModelParts.HEAD, live.head, rest.head);
+        syncBone(custom, ModelParts.HAT, live.hat, rest.hat);
+        syncBone(custom, ModelParts.BODY, live.body, rest.body);
+        syncBone(custom, ModelParts.RIGHT_ARM, live.rightArm, rest.rightArm);
+        syncBone(custom, ModelParts.LEFT_ARM, live.leftArm, rest.leftArm);
+        syncBone(custom, ModelParts.RIGHT_LEG, live.rightLeg, rest.rightLeg);
+        syncBone(custom, ModelParts.LEFT_LEG, live.leftLeg, rest.leftLeg);
+    }
+
     public static void syncBone(CustomModel model, String normalizedName, @Nullable ModelPart live, @Nullable ModelPart rest) {
         if (live == null) {
             return;

@@ -44,6 +44,19 @@ public final class DevMode {
             .withStyle(net.minecraft.ChatFormatting.DARK_AQUA));
     }
 
+    public static void report(@Nullable Entity subject, String message) {
+        if (!any || subject == null) return;
+        if (!(subject.level() instanceof ServerLevel level)) return;
+        List<ServerPlayer> watchers = watchers(level);
+        if (watchers.isEmpty()) return;
+        net.minecraft.network.chat.Component text = net.minecraft.network.chat.Component
+            .literal("[apoli] " + subject.getName().getString() + ": " + message)
+            .withStyle(net.minecraft.ChatFormatting.RED);
+        for (int i = 0; i < watchers.size(); i++) {
+            watchers.get(i).sendSystemMessage(text);
+        }
+    }
+
     public static void forget(UUID uuid) {
         if (ENABLED.remove(uuid)) any = !ENABLED.isEmpty();
     }

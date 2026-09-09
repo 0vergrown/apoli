@@ -115,6 +115,7 @@ public final class Apoli {
 
     @SubscribeEvent
     public void onAddReloadListener(AddReloadListenerEvent event) {
+        dev.overgrown.apoli.codec.ApoliOps.setLoadingRegistries(event.getRegistryAccess());
         event.addListener(powerLoader);
         event.addListener(keybindLoader);
         event.addListener(skillLoader);
@@ -132,6 +133,7 @@ public final class Apoli {
         dev.overgrown.apoli.command.ApoliMountCommand.register(event.getDispatcher());
         dev.overgrown.apoli.command.ApoliKeyCommand.register(event.getDispatcher());
         dev.overgrown.apoli.command.ApoliDevModeCommand.register(event.getDispatcher());
+        dev.overgrown.apoli.command.ApoliTickCommand.register(event.getDispatcher());
         if (dev.overgrown.apoli.compat.ModCompat.anyAccessory()) {
             dev.overgrown.apoli.compat.accessory.command.AccessoryCommand.register(event.getDispatcher());
         }
@@ -194,6 +196,11 @@ public final class Apoli {
                 ApoliNetwork.sendSkillState(player);
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onServerAboutToStart(net.neoforged.neoforge.event.server.ServerAboutToStartEvent event) {
+        dev.overgrown.apoli.codec.ApoliOps.setRegistries(event.getServer().registryAccess());
     }
 
     @SubscribeEvent
@@ -278,7 +285,22 @@ public final class Apoli {
     }
 
     @SubscribeEvent
+    public void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
+        if (dev.overgrown.apoli.power.builtin.PreventUseHandler.isPrevented(
+                event.getEntity(), event.getTarget(), event.getHand())) {
+            event.setCancellationResult(InteractionResult.FAIL);
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
     public void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        if (dev.overgrown.apoli.power.builtin.PreventUseHandler.isPrevented(
+                event.getEntity(), event.getTarget(), event.getHand())) {
+            event.setCancellationResult(InteractionResult.FAIL);
+            event.setCanceled(true);
+            return;
+        }
         if (event.getLevel().isClientSide()) return;
         InteractionResult result = ActionOnUseHandler.fire(event.getEntity(), event.getTarget(), event.getHand());
         if (result != InteractionResult.PASS) {
@@ -375,9 +397,12 @@ public final class Apoli {
 
     @SubscribeEvent
     public void onServerStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent event) {
+        dev.overgrown.apoli.codec.ApoliOps.setRegistries(null);
+        dev.overgrown.apoli.codec.ApoliOps.setLoadingRegistries(null);
         PoweredEntities.clear();
         dev.overgrown.apoli.block.GhostBlocks.clear();
         dev.overgrown.apoli.entity.PlayerModelTypes.clear();
+            dev.overgrown.apoli.tick.TickRates.clear();
         DelayedActionQueue.clear();
         dev.overgrown.apoli.rope.RopeManager.clear();
         dev.overgrown.apoli.mount.MountOffsets.clearAll();
@@ -385,6 +410,7 @@ public final class Apoli {
         dev.overgrown.apoli.compat.icarus.WingsAccess.clear();
         dev.overgrown.apoli.compat.voicechat.VoiceState.clear();
         dev.overgrown.apoli.compat.voicechat.VoiceHearing.reset();
+            dev.overgrown.apoli.tick.TickRates.clear();
     }
 
     @SubscribeEvent
@@ -422,6 +448,7 @@ public final class Apoli {
         dev.overgrown.apoli.rope.RopeManager.tick(event.getServer());
         dev.overgrown.apoli.entity.GrabManager.tick(event.getServer());
         dev.overgrown.apoli.entity.ProjectileTickManager.tick(event.getServer());
+        dev.overgrown.apoli.tick.TickRates.serverTick(event.getServer());
         boolean forcedKeys = dev.overgrown.apoli.keybind.HeldKeys.anyForced();
         PoweredEntities.forEach(entity -> {
             PowerContainer c = PowerContainer.of(entity);

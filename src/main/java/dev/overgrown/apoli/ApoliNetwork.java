@@ -51,6 +51,8 @@ public final class ApoliNetwork {
         registrar.playToClient(PowerActivatedS2C.TYPE, PowerActivatedS2C.STREAM_CODEC, ApoliNetwork::onPowerActivated);
         registrar.playToClient(SyncKeybindsS2C.TYPE, SyncKeybindsS2C.STREAM_CODEC, ApoliNetwork::onSyncKeybinds);
         registrar.playToClient(ApplyVelocityS2C.TYPE, ApplyVelocityS2C.STREAM_CODEC, ApoliNetwork::onApplyVelocity);
+        registrar.playToClient(dev.overgrown.apoli.network.payload.TickRateS2C.TYPE,
+            dev.overgrown.apoli.network.payload.TickRateS2C.STREAM_CODEC, ApoliNetwork::onTickRate);
         registrar.playToClient(dev.overgrown.apoli.network.payload.PowerInventoryS2C.TYPE,
             dev.overgrown.apoli.network.payload.PowerInventoryS2C.STREAM_CODEC, ApoliNetwork::onPowerInventory);
         registrar.playToClient(dev.overgrown.apoli.network.payload.MountOffsetS2C.TYPE,
@@ -76,6 +78,8 @@ public final class ApoliNetwork {
         registrar.playToServer(KeyHeldC2S.TYPE, KeyHeldC2S.STREAM_CODEC, ApoliNetwork::onKeyHeld);
         registrar.playToServer(dev.overgrown.apoli.network.payload.ScrollWheelC2S.TYPE,
             dev.overgrown.apoli.network.payload.ScrollWheelC2S.STREAM_CODEC, ApoliNetwork::onScrollWheel);
+        registrar.playToServer(dev.overgrown.apoli.network.payload.MouseMovementC2S.TYPE,
+            dev.overgrown.apoli.network.payload.MouseMovementC2S.STREAM_CODEC, ApoliNetwork::onMouseMovement);
         registrar.playToServer(
             dev.overgrown.apoli.network.payload.PlayerModelTypeC2S.TYPE,
             dev.overgrown.apoli.network.payload.PlayerModelTypeC2S.STREAM_CODEC,
@@ -180,6 +184,10 @@ public final class ApoliNetwork {
             ctx.player().getUUID(), payload.firstPerson()));
     }
 
+    private static void onTickRate(dev.overgrown.apoli.network.payload.TickRateS2C payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> dev.overgrown.apoli.client.ClientPayloadHandlers.onTickRate(payload));
+    }
+
     private static void onScrollWheel(dev.overgrown.apoli.network.payload.ScrollWheelC2S payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer sp) {
@@ -187,6 +195,15 @@ public final class ApoliNetwork {
                     payload.up() ? dev.overgrown.apoli.data.ScrollDirection.UP
                         : dev.overgrown.apoli.data.ScrollDirection.DOWN,
                     payload.notches());
+            }
+        });
+    }
+
+    private static void onMouseMovement(dev.overgrown.apoli.network.payload.MouseMovementC2S payload,
+                                        IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer sp) {
+                dev.overgrown.apoli.power.builtin.ActionOnMouseMovementPower.moved(sp, payload.yaw(), payload.pitch());
             }
         });
     }
@@ -324,6 +341,14 @@ public final class ApoliNetwork {
     public static void sendKeybinds(ServerPlayer recipient, SyncKeybindsS2C payload) {
         if (!connected(recipient)) return;
         PacketDistributor.sendToPlayer(recipient, payload);
+    }
+
+    public static void broadcastTickRate(MinecraftServer server, dev.overgrown.apoli.network.payload.TickRateS2C payload) {
+        PacketDistributor.sendToAllPlayers(payload);
+    }
+
+    public static void sendTickRateToTrackers(Entity entity, dev.overgrown.apoli.network.payload.TickRateS2C payload) {
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, payload);
     }
 
     public static void sendApplyVelocityToTrackers(Entity entity, ApplyVelocityS2C payload) {

@@ -49,7 +49,7 @@ public final class ApoliClient {
     public static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.registerBelowAll(Apoli.id("overlay_below_hud"),
             (graphics, deltaTracker) -> OverlayRenderer.renderBelowHud(graphics, deltaTracker.getGameTimeDeltaPartialTick(false)));
-        event.registerAbove(VanillaGuiLayers.HOTBAR, Apoli.id("power_hud"),
+        event.registerBelow(VanillaGuiLayers.SELECTED_ITEM_NAME, Apoli.id("power_hud"),
             (graphics, deltaTracker) -> PowerHudRenderer.render(graphics, deltaTracker.getGameTimeDeltaPartialTick(false)));
         event.registerAbove(VanillaGuiLayers.HOTBAR, Apoli.id("text_overlay"),
             (graphics, deltaTracker) -> TextOverlayRenderer.render(graphics, deltaTracker.getGameTimeDeltaPartialTick(false)));
@@ -131,6 +131,7 @@ public final class ApoliClient {
         public static void onClientTick(ClientTickEvent.Post event) {
             Minecraft mc = Minecraft.getInstance();
             CursorSpeedState.tick(mc);
+            dev.overgrown.apoli.client.MouseMovementWatcher.clientTick(mc);
             dev.overgrown.apoli.client.render.ClientRenderFlags.clientTick(mc);
             dev.overgrown.apoli.client.render.BlockRenderRules.clientTick(mc);
             PhasingRenderState.clientTick(mc);

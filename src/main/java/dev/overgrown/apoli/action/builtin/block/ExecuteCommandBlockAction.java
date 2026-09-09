@@ -55,7 +55,7 @@ public final class ExecuteCommandBlockAction implements ActionType<BlockCtx, Exe
         if (server == null) return;
         String command = cfg.command;
         if (cfg.arguments.isPresent()) {
-            command = MacroArguments.expand(command, cfg.arguments.get().resolve(server, ctx.actor(), null));
+            command = MacroArguments.expand(command, cfg.arguments.get().resolve(server, ctx.actor(), null), ctx.actor());
             if (command == null) return;
         }
         dev.overgrown.apoli.dev.DevMode.echoCommand(ctx.actor(), command);

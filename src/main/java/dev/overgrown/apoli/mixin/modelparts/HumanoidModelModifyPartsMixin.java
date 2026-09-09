@@ -2,15 +2,20 @@ package dev.overgrown.apoli.mixin.modelparts;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import dev.overgrown.apoli.client.render.AnimationPlayer;
 import dev.overgrown.apoli.client.render.HandRenderPass;
 import dev.overgrown.apoli.client.render.ModelPartAnimator;
+import dev.overgrown.apoli.data.ModelAnimation;
+import dev.overgrown.apoli.power.builtin.ModifyPlayerModelPower;
 import dev.overgrown.apoli.data.ModelPartTimeline;
 import dev.overgrown.apoli.client.render.ModelPartLookup;
 import dev.overgrown.apoli.data.ModelPartTransformation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,6 +39,8 @@ public abstract class HumanoidModelModifyPartsMixin {
     @Unique
     private final List<ModelPart> apoli$scratch = new ArrayList<>(2);
     @Unique
+    private ModelAnimation apoli$modelAnimation;
+    @Unique
     private boolean apoli$hadPower;
     @Unique
     private boolean apoli$poseOverridden;
@@ -46,7 +53,10 @@ public abstract class HumanoidModelModifyPartsMixin {
 
     @Inject(method = SETUP_ANIM, at = @At("HEAD"))
     private void apoli$modifyPartsHead(LivingEntity entity, float f, float g, float h, float i, float j, CallbackInfo ci) {
-        boolean has = !ModelPartAnimator.update(entity).isEmpty();
+        this.apoli$modelAnimation = (Object) this instanceof PlayerModel
+            ? ModifyPlayerModelPower.firstActiveAnimations(entity)
+            : null;
+        boolean has = !ModelPartAnimator.update(entity).isEmpty() || this.apoli$modelAnimation != null;
         if (has) {
             if (apoli$originals.isEmpty()) apoli$snapshot();
             apoli$restore();
@@ -91,6 +101,12 @@ public abstract class HumanoidModelModifyPartsMixin {
                 }
             }
             apoli$scratch.clear();
+        }
+
+        if (this.apoli$modelAnimation != null) {
+            AnimationPlayer.apply((HumanoidModel<?>) (Object) this, entity, this.apoli$modelAnimation,
+                ModifyPlayerModelPower.CANONICAL, Mth.clamp(h - entity.tickCount, 0.0F, 1.0F));
+            this.apoli$modelAnimation = null;
         }
 
         if (apoli$poseOverridden) {

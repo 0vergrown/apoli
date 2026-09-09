@@ -1,9 +1,6 @@
 package dev.overgrown.apoli.mixin.flag;
 
-import dev.overgrown.apoli.Apoli;
-import dev.overgrown.apoli.power.PowerLookup;
 import dev.overgrown.apoli.power.builtin.ElytraFlightPower;
-import dev.overgrown.apoli.power.ApoliIds;
 import net.minecraft.client.renderer.entity.layers.ElytraLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,7 +23,7 @@ public abstract class ElytraLayerRenderMixin {
     @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
     private void apoli$forceElytraRender(ItemStack stack, LivingEntity entity, CallbackInfoReturnable<Boolean> cir) {
         this.apoli$entity = entity;
-        if (!entity.isInvisible() && apoli$shouldRenderElytra(entity)) {
+        if (!entity.isInvisible() && ElytraFlightPower.shouldRenderElytra(entity)) {
             cir.setReturnValue(true);
         }
     }
@@ -34,21 +31,7 @@ public abstract class ElytraLayerRenderMixin {
     @ModifyArg(method = "render", at = @At(value = "INVOKE",
         target = "Lnet/minecraft/client/renderer/RenderType;armorCutoutNoCull(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/RenderType;"))
     private ResourceLocation apoli$elytraTexture(ResourceLocation original) {
-        ResourceLocation[] texture = new ResourceLocation[]{null};
-        if (apoli$entity != null) {
-            PowerLookup.forEach(apoli$entity, ApoliIds.ELYTRA_FLIGHT, ElytraFlightPower.Config.class, cfg -> {
-                if (texture[0] == null) cfg.textureLocation().ifPresent(t -> texture[0] = t);
-            });
-        }
-        return texture[0] != null ? texture[0] : original;
-    }
-
-    @Unique
-    private static boolean apoli$shouldRenderElytra(LivingEntity entity) {
-        boolean[] render = new boolean[]{false};
-        PowerLookup.forEach(entity, ApoliIds.ELYTRA_FLIGHT, ElytraFlightPower.Config.class, cfg -> {
-            if (cfg.renderElytra()) render[0] = true;
-        });
-        return render[0];
+        ResourceLocation texture = ElytraFlightPower.textureOf(apoli$entity);
+        return texture != null ? texture : original;
     }
 }

@@ -33,6 +33,11 @@ public final class AreaOfEffectBlockMetaAction implements ActionType<BlockCtx, A
 
     @Override
     public void run(Cfg cfg, BlockCtx ctx) {
+        if (dev.overgrown.apoli.dev.DevMode.any() && ctx.level() instanceof net.minecraft.server.level.ServerLevel devLevel) {
+            dev.overgrown.apoli.dev.DevParticles.outlineShape(devLevel,
+                net.minecraft.world.phys.Vec3.atCenterOf(ctx.pos()), cfg.shape,
+                cfg.radius.x(), cfg.radius.y(), cfg.radius.z());
+        }
         for (BlockPos pos : cfg.shape.positions(ctx.pos(),
                 (int) Math.ceil(cfg.radius.x()), (int) Math.ceil(cfg.radius.y()), (int) Math.ceil(cfg.radius.z()))) {
             BlockState state = ctx.level().getBlockState(pos);

@@ -47,6 +47,10 @@ public final class ClientPayloadHandlers {
             new dev.overgrown.apoli.mount.MountOffsets.Offset(msg.x(), msg.y(), msg.z(), msg.space(), msg.rotation()));
     }
 
+    public static void onTickRate(dev.overgrown.apoli.network.payload.TickRateS2C payload) {
+        ClientTickRates.set(payload.entityId(), payload.rate(), payload.baseRate());
+    }
+
     public static void onApplyVelocity(ApplyVelocityS2C msg) {
         net.minecraft.client.multiplayer.ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;

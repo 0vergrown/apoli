@@ -31,7 +31,7 @@ public final class SkillTreeLoader extends SimpleJsonResourceReloadListener {
 
         for (Map.Entry<ResourceLocation, JsonElement> e : data.entrySet()) {
             ResourceLocation id = e.getKey();
-            Dynamic<JsonElement> file = IdWildcards.apply(new Dynamic<>(JsonOps.INSTANCE, e.getValue()), id);
+            Dynamic<JsonElement> file = IdWildcards.apply(new Dynamic<>(dev.overgrown.apoli.codec.ApoliOps.of(JsonOps.INSTANCE), e.getValue()), id);
             if (file.getMapValues().result().isEmpty()) {
                 LOG.error("[Apoli] Skill tree file {} is empty or not a JSON object — skipping.", id);
                 continue;
