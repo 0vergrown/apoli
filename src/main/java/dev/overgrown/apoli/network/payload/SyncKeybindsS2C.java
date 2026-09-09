@@ -4,6 +4,7 @@ import dev.overgrown.apoli.Apoli;
 import dev.overgrown.apoli.keybind.ApoliKeybinds;
 import dev.overgrown.apoli.keybind.Keybind;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -30,7 +31,7 @@ public record SyncKeybindsS2C(List<Keybind> keybinds) implements CustomPacketPay
             buf.writeUtf(kb.key());
             buf.writeUtf(kb.category());
             buf.writeBoolean(kb.name().isPresent());
-            kb.name().ifPresent(buf::writeUtf);
+            kb.name().ifPresent(component -> buf.writeUtf(Keybind.encodeName(component)));
         }
     }
 
@@ -41,7 +42,9 @@ public record SyncKeybindsS2C(List<Keybind> keybinds) implements CustomPacketPay
             ResourceLocation id = buf.readResourceLocation();
             String key = buf.readUtf();
             String category = buf.readUtf();
-            Optional<String> name = buf.readBoolean() ? Optional.of(buf.readUtf()) : Optional.empty();
+            Optional<Component> name = buf.readBoolean()
+                ? Optional.of(Keybind.decodeName(buf.readUtf()))
+                : Optional.empty();
             out.add(new Keybind(id, key, category, name));
         }
         return new SyncKeybindsS2C(out);

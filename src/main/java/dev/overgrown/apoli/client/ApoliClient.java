@@ -121,6 +121,10 @@ public final class ApoliClient implements ClientModInitializer {
                     new dev.overgrown.apoli.mount.MountOffsets.Offset(
                         payload.x(), payload.y(), payload.z(), payload.space(), payload.rotation()))));
 
+        ClientPlayNetworking.registerGlobalReceiver(dev.overgrown.apoli.network.payload.TickRateS2C.TYPE,
+            (payload, context) -> context.client().execute(() ->
+                dev.overgrown.apoli.client.ClientTickRates.set(payload.entityId(), payload.rate(), payload.baseRate())));
+
         ClientPlayNetworking.registerGlobalReceiver(ApplyVelocityS2C.TYPE, (payload, context) ->
             context.client().execute(() -> {
                 if (context.client().level == null) return;
@@ -242,6 +246,7 @@ public final class ApoliClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
             CursorSpeedState.tick(mc);
+            dev.overgrown.apoli.client.MouseMovementWatcher.clientTick(mc);
             dev.overgrown.apoli.client.render.ClientRenderFlags.clientTick(mc);
             dev.overgrown.apoli.client.render.BlockRenderRules.clientTick(mc);
             PhasingRenderState.clientTick(mc);

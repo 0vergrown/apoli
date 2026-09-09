@@ -32,7 +32,7 @@ public final class GlobalPowerLoader extends SimpleJsonResourceReloadListener {
         Map<ResourceLocation, GlobalPowerSet> byId = new HashMap<>(data.size());
         for (Map.Entry<ResourceLocation, JsonElement> entry : data.entrySet()) {
             ResourceLocation id = entry.getKey();
-            GlobalPowerSet.codec(id).parse(IdWildcards.apply(new Dynamic<>(JsonOps.INSTANCE, entry.getValue()), id))
+            GlobalPowerSet.codec(id).parse(IdWildcards.apply(new Dynamic<>(dev.overgrown.apoli.codec.ApoliOps.of(JsonOps.INSTANCE), entry.getValue()), id))
                 .resultOrPartial(err -> LOG.error("[Apoli] Failed to parse global power set {}: {}", id, err))
                 .ifPresent(set -> {
                     GlobalPowerSet existing = byId.get(id);

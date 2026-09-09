@@ -36,9 +36,13 @@ public final class ClientPowerState {
         if (Minecraft.getInstance().hasSingleplayerServer()) return;
 
         Map<ResourceLocation, Power> decoded = new HashMap<>();
+        net.minecraft.client.multiplayer.ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        com.mojang.serialization.DynamicOps<JsonElement> ops = connection == null
+            ? JsonOps.INSTANCE
+            : connection.registryAccess().createSerializationContext(JsonOps.INSTANCE);
         payload.rawPowers().forEach((id, json) -> {
             JsonElement element = JsonParser.parseString(json);
-            Power.CODEC.parse(JsonOps.INSTANCE, element)
+            Power.CODEC.parse(ops, element)
                 .resultOrPartial(error -> Apoli.LOGGER.error("[Apoli] Client failed to parse power {}: {}", id, error))
                 .ifPresent(p -> decoded.put(id, p));
         });

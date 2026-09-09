@@ -39,7 +39,7 @@ public final class ApoliKeybindLoader extends SimpleJsonResourceReloadListener {
         Map<ResourceLocation, Keybind> loaded = new LinkedHashMap<>();
         for (Map.Entry<ResourceLocation, JsonElement> e : data.entrySet()) {
             ResourceLocation id = e.getKey();
-            Keybind.CODEC_NO_ID.parse(JsonOps.INSTANCE, e.getValue())
+            Keybind.CODEC_NO_ID.parse(dev.overgrown.apoli.codec.ApoliOps.of(JsonOps.INSTANCE), e.getValue())
                 .resultOrPartial(err -> LOG.error("Failed to parse keybind {}: {}", id, err))
                 .ifPresent(kb -> loaded.put(id, kb.withId(id)));
         }

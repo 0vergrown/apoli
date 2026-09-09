@@ -43,7 +43,8 @@ public record SyncPowersS2C(Map<ResourceLocation, String> rawPowers) implements 
         Map<ResourceLocation, Power> result = new HashMap<>();
         for (Map.Entry<ResourceLocation, String> e : rawPowers.entrySet()) {
             JsonElement el = JsonParser.parseString(e.getValue());
-            Power.CODEC.parse(JsonOps.INSTANCE, el).result().ifPresent(p -> result.put(e.getKey(), p));
+            Power.CODEC.parse(dev.overgrown.apoli.codec.ApoliOps.of(JsonOps.INSTANCE), el)
+                .result().ifPresent(p -> result.put(e.getKey(), p));
         }
         return result;
     }

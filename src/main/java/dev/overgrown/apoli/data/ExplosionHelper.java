@@ -1,6 +1,8 @@
 package dev.overgrown.apoli.data;
 
+import dev.overgrown.apoli.condition.BiEntityCondition;
 import dev.overgrown.apoli.condition.BlockCondition;
+import dev.overgrown.apoli.condition.context.BiEntityCtx;
 import dev.overgrown.apoli.condition.context.BlockCtx;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -25,12 +27,16 @@ public final class ExplosionHelper {
     public static void detonate(Level level, @Nullable Entity source, Vec3 pos, float power,
                                 boolean createFire, DestructionType destructionType,
                                 Optional<BlockCondition> indestructible,
-                                Optional<BlockCondition> destructible) {
+                                Optional<BlockCondition> destructible,
+                                boolean damageTargets,
+                                Optional<BiEntityCondition> targetCondition) {
         if (level.isClientSide()) return;
         DamageSource damageSource = level.damageSources().explosion(source, source);
-        ExplosionDamageCalculator calculator = (indestructible.isPresent() || destructible.isPresent())
-            ? new ConditionedCalculator(level, indestructible.orElse(null), destructible.orElse(null))
-            : null;
+        ExplosionDamageCalculator calculator =
+            (indestructible.isPresent() || destructible.isPresent() || !damageTargets || targetCondition.isPresent())
+                ? new ConditionedCalculator(level, indestructible.orElse(null), destructible.orElse(null),
+                    damageTargets, source, targetCondition.orElse(null))
+                : null;
 
         Explosion explosion = new Explosion(
             level, source, damageSource, calculator,
@@ -45,13 +51,29 @@ public final class ExplosionHelper {
         private final Level level;
         private final @Nullable BlockCondition indestructible;
         private final @Nullable BlockCondition destructible;
+        private final boolean damageTargets;
+        private final @Nullable Entity source;
+        private final @Nullable BiEntityCondition targetCondition;
 
         ConditionedCalculator(Level level,
                               @Nullable BlockCondition indestructible,
-                              @Nullable BlockCondition destructible) {
+                              @Nullable BlockCondition destructible,
+                              boolean damageTargets,
+                              @Nullable Entity source,
+                              @Nullable BiEntityCondition targetCondition) {
             this.level = level;
             this.indestructible = indestructible;
             this.destructible = destructible;
+            this.damageTargets = damageTargets;
+            this.source = source;
+            this.targetCondition = targetCondition;
+        }
+
+        @Override
+        public boolean shouldDamageEntity(Explosion explosion, Entity entity) {
+            if (!damageTargets && entity != source) return false;
+            if (targetCondition != null && !targetCondition.test(BiEntityCtx.of(source, entity, level))) return false;
+            return super.shouldDamageEntity(explosion, entity);
         }
 
         @Override

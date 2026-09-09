@@ -104,8 +104,11 @@ public final class Apoli implements ModInitializer {
         powerLoader = new ApoliReloadListener();
         keybindLoader = new ApoliKeybindLoader();
         skillLoader = new dev.overgrown.apoli.skill.SkillTreeLoader();
-        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(
-            new IdentifiedReloader(id("powers_reloader"), powerLoader));
+        IdentifiedReloader powersReloader = new IdentifiedReloader(id("powers_reloader"), powerLoader);
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(id("powers_reloader"), registries -> {
+            dev.overgrown.apoli.codec.ApoliOps.setLoadingRegistries(registries);
+            return powersReloader;
+        });
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(
             new IdentifiedReloader(id("keybinds_reloader"), keybindLoader));
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(
@@ -116,11 +119,13 @@ public final class Apoli implements ModInitializer {
             new IdentifiedReloader(id("scripts_reloader"), new dev.overgrown.apoli.script.ScriptLoader()));
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            dev.overgrown.apoli.codec.ApoliOps.setRegistries(server.registryAccess());
             powerLoader.attachServer(server);
             keybindLoader.attachServer(server);
             dev.overgrown.apoli.entity.GrabManager.clearAll();
             dev.overgrown.apoli.block.GhostBlocks.clear();
             dev.overgrown.apoli.entity.PlayerModelTypes.clear();
+            dev.overgrown.apoli.tick.TickRates.clear();
         });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             dev.overgrown.apoli.skill.SkillRegistry.reportOrphanedSkills();
@@ -145,6 +150,8 @@ public final class Apoli implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register(server ->
             dev.overgrown.apoli.block.GhostBlocks.restoreAll(server));
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            dev.overgrown.apoli.codec.ApoliOps.setRegistries(null);
+            dev.overgrown.apoli.codec.ApoliOps.setLoadingRegistries(null);
             PoweredEntities.clear();
             dev.overgrown.apoli.block.GhostBlocks.clear();
             DelayedActionQueue.clear();
@@ -154,6 +161,7 @@ public final class Apoli implements ModInitializer {
             dev.overgrown.apoli.compat.icarus.WingsAccess.clear();
             dev.overgrown.apoli.compat.voicechat.VoiceState.clear();
             dev.overgrown.apoli.compat.voicechat.VoiceHearing.reset();
+            dev.overgrown.apoli.tick.TickRates.clear();
         });
 
         net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register(
@@ -177,6 +185,7 @@ public final class Apoli implements ModInitializer {
             dev.overgrown.apoli.command.ApoliMountCommand.register(dispatcher);
             dev.overgrown.apoli.command.ApoliKeyCommand.register(dispatcher);
             dev.overgrown.apoli.command.ApoliDevModeCommand.register(dispatcher);
+            dev.overgrown.apoli.command.ApoliTickCommand.register(dispatcher);
             if (dev.overgrown.apoli.compat.ModCompat.anyAccessory()) {
                 dev.overgrown.apoli.compat.accessory.command.AccessoryCommand.register(dispatcher);
             }
@@ -242,6 +251,14 @@ public final class Apoli implements ModInitializer {
                     payload.up() ? dev.overgrown.apoli.data.ScrollDirection.UP
                         : dev.overgrown.apoli.data.ScrollDirection.DOWN,
                     payload.notches()));
+            });
+
+        ServerPlayNetworking.registerGlobalReceiver(
+            dev.overgrown.apoli.network.payload.MouseMovementC2S.TYPE, (payload, context) -> {
+                ServerPlayer mover = context.player();
+                context.server().execute(() ->
+                    dev.overgrown.apoli.power.builtin.ActionOnMouseMovementPower.moved(
+                        mover, payload.yaw(), payload.pitch()));
             });
 
         ServerPlayNetworking.registerGlobalReceiver(dev.overgrown.apoli.network.payload.SpeechTriggerC2S.TYPE, (payload, context) -> {
@@ -314,6 +331,9 @@ public final class Apoli implements ModInitializer {
                 dev.overgrown.apoli.radial.RadialMenuManager.select(context.player(), payload.nonce(), payload.index())));
 
         UseEntityCallback.EVENT.register((player, level, hand, target, hitResult) -> {
+            if (dev.overgrown.apoli.power.builtin.PreventUseHandler.isPrevented(player, target, hand)) {
+                return InteractionResult.FAIL;
+            }
             if (level.isClientSide()) return InteractionResult.PASS;
             return ActionOnUseHandler.fireOncePerTick(player, target, hand);
         });
@@ -433,6 +453,7 @@ public final class Apoli implements ModInitializer {
         dev.overgrown.apoli.rope.RopeManager.tick(server);
         dev.overgrown.apoli.entity.GrabManager.tick(server);
         dev.overgrown.apoli.entity.ProjectileTickManager.tick(server);
+        dev.overgrown.apoli.tick.TickRates.serverTick(server);
         boolean forcedKeys = dev.overgrown.apoli.keybind.HeldKeys.anyForced();
         PoweredEntities.forEach(entity -> {
             PowerContainer c = PowerContainer.of(entity);

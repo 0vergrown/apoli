@@ -51,6 +51,8 @@ public final class ApoliNetwork {
         PayloadTypeRegistry.playS2C().register(PowerActivatedS2C.TYPE, PowerActivatedS2C.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(SyncKeybindsS2C.TYPE, SyncKeybindsS2C.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(ApplyVelocityS2C.TYPE, ApplyVelocityS2C.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(dev.overgrown.apoli.network.payload.TickRateS2C.TYPE,
+            dev.overgrown.apoli.network.payload.TickRateS2C.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(DisguiseUpdateS2C.TYPE, DisguiseUpdateS2C.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(dev.overgrown.apoli.network.payload.TextDisplayS2C.TYPE,
             dev.overgrown.apoli.network.payload.TextDisplayS2C.STREAM_CODEC);
@@ -70,6 +72,8 @@ public final class ApoliNetwork {
         PayloadTypeRegistry.playC2S().register(KeyHeldC2S.TYPE, KeyHeldC2S.STREAM_CODEC);
         PayloadTypeRegistry.playC2S().register(dev.overgrown.apoli.network.payload.ScrollWheelC2S.TYPE,
             dev.overgrown.apoli.network.payload.ScrollWheelC2S.STREAM_CODEC);
+        PayloadTypeRegistry.playC2S().register(dev.overgrown.apoli.network.payload.MouseMovementC2S.TYPE,
+            dev.overgrown.apoli.network.payload.MouseMovementC2S.STREAM_CODEC);
         PayloadTypeRegistry.playC2S().register(
             dev.overgrown.apoli.network.payload.PlayerModelTypeC2S.TYPE,
             dev.overgrown.apoli.network.payload.PlayerModelTypeC2S.STREAM_CODEC);
@@ -187,6 +191,21 @@ public final class ApoliNetwork {
         if (connected(recipient)
             && ServerPlayNetworking.canSend(recipient, dev.overgrown.apoli.network.payload.SyncShaderS2C.TYPE)) {
             ServerPlayNetworking.send(recipient, payload);
+        }
+    }
+
+    public static void broadcastTickRate(MinecraftServer server, dev.overgrown.apoli.network.payload.TickRateS2C payload) {
+        for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+            if (connected(p)) ServerPlayNetworking.send(p, payload);
+        }
+    }
+
+    public static void sendTickRateToTrackers(Entity entity, dev.overgrown.apoli.network.payload.TickRateS2C payload) {
+        for (ServerPlayer viewer : PlayerLookup.tracking(entity)) {
+            if (connected(viewer)) ServerPlayNetworking.send(viewer, payload);
+        }
+        if (entity instanceof ServerPlayer self && connected(self)) {
+            ServerPlayNetworking.send(self, payload);
         }
     }
 

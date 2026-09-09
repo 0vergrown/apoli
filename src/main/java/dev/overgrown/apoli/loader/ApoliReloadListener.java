@@ -63,7 +63,7 @@ public final class ApoliReloadListener extends SimpleJsonResourceReloadListener 
             Dynamic<JsonElement> power = prepare(e.getValue(), id);
             dev.overgrown.apoli.codec.LoggedOptionalField.setContext(id);
             try {
-                Power.CODEC.parse(power)
+                Power.CODEC.parse(dev.overgrown.apoli.codec.ApoliOps.attach(power))
                     .resultOrPartial(err -> LOG.error("Failed to parse power {}: {}", id, err))
                     .ifPresent(parsed -> loaded.put(id, parsed));
             } finally {
@@ -71,6 +71,7 @@ public final class ApoliReloadListener extends SimpleJsonResourceReloadListener 
             }
         }
         ApoliPowers.replaceAll(loaded);
+        dev.overgrown.apoli.data.MacroArguments.resetWarnings();
         LOG.info("[Apoli] Loaded {} power(s).", loaded.size());
 
         Map<ResourceLocation, dev.overgrown.apoli.skill.Skill> powerSkills = new HashMap<>();
